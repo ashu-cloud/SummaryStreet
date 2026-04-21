@@ -11,7 +11,7 @@ export default function EditPostPage() {
 
   const [title, setTitle] = useState('')
   const [content, setContent] = useState('')
-  const [imageUrl, setImageUrl] = useState('')
+  const [coverImageUrl, setCoverImageUrl] = useState('')
   const [loading, setLoading] = useState(false)
   const [fetching, setFetching] = useState(true)
   const [error, setError] = useState('')
@@ -24,7 +24,7 @@ export default function EditPostPage() {
       if (res.ok && data.post) {
         setTitle(data.post.title)
         setContent(data.post.body)
-        setImageUrl(data.post.image_url ?? '')
+        setCoverImageUrl(data.post.image_url ?? '')
       } else {
         setError('Post not found')
       }
@@ -42,7 +42,7 @@ export default function EditPostPage() {
     const res = await fetch(`/api/posts/${id}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ title, content, image_url: imageUrl || null }),
+      body: JSON.stringify({ title, content }),
     })
 
     const data = await res.json()
@@ -92,25 +92,20 @@ export default function EditPostPage() {
             />
           </div>
 
-          <div className="form-group">
-            <label htmlFor="edit-post-image" className="form-label">Featured Image URL</label>
-            <input
-              id="edit-post-image"
-              type="url"
-              className="form-input"
-              value={imageUrl}
-              onChange={(e) => setImageUrl(e.target.value)}
-              placeholder="https://example.com/image.jpg (optional)"
-            />
-            {imageUrl && (
-              <img
-                src={imageUrl}
-                alt="Preview"
-                style={{ marginTop: '0.75rem', maxHeight: '160px', objectFit: 'cover', borderRadius: 'var(--radius-md)', width: '100%' }}
-                onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }}
-              />
-            )}
+          <div className="alert alert-info">
+            Cover image is selected automatically by AI from Unsplash whenever you save changes.
           </div>
+
+          {coverImageUrl && (
+            <div className="form-group">
+              <span className="form-label">Current Cover Image</span>
+              <img
+                src={coverImageUrl}
+                alt="Current cover"
+                style={{ maxHeight: '180px', objectFit: 'cover', borderRadius: 'var(--radius-md)', width: '100%' }}
+              />
+            </div>
+          )}
 
           <div className="form-group">
             <label htmlFor="edit-post-content" className="form-label">Content *</label>

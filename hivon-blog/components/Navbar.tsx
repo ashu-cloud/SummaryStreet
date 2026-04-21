@@ -16,14 +16,19 @@ export default function Navbar() {
   const [user, setUser] = useState<User | null>(null)
   const [profile, setProfile] = useState<UserProfile | null>(null)
   const [loading, setLoading] = useState(true)
+  const [signingOut, setSigningOut] = useState(false)
 
   useEffect(() => {
+    let isMounted = true
+    let unsubscribe: (() => void) | undefined
+
     // Lazily import Supabase client only on the client side
     const initAuth = async () => {
       const { createClient } = await import('@/lib/supabase/client')
       const supabase = createClient()
 
       const { data: { user } } = await supabase.auth.getUser()
+      if (!isMounted) return
       setUser(user)
 
       if (user) {
@@ -32,12 +37,18 @@ export default function Navbar() {
           .select('name, role')
           .eq('id', user.id)
           .single()
+        if (!isMounted) return
         setProfile(data)
+      } else {
+        setProfile(null)
       }
+
+      if (!isMounted) return
       setLoading(false)
 
       const { data: { subscription } } = supabase.auth.onAuthStateChange(
-        async (event, session) => {
+        async (_event, session) => {
+          if (!isMounted) return
           setUser(session?.user ?? null)
           if (session?.user) {
             const { data } = await supabase
@@ -45,6 +56,7 @@ export default function Navbar() {
               .select('name, role')
               .eq('id', session.user.id)
               .single()
+            if (!isMounted) return
             setProfile(data)
           } else {
             setProfile(null)
@@ -52,17 +64,33 @@ export default function Navbar() {
         }
       )
 
-      return () => subscription.unsubscribe()
+      unsubscribe = () => subscription.unsubscribe()
     }
 
     initAuth()
+
+    return () => {
+      isMounted = false
+      unsubscribe?.()
+    }
   }, [])
 
   const handleSignOut = async () => {
+    setSigningOut(true)
     const { createClient } = await import('@/lib/supabase/client')
     const supabase = createClient()
-    await supabase.auth.signOut()
-    router.push('/')
+    const { error } = await supabase.auth.signOut()
+
+    // If network/global revoke fails, clear local session so user is still logged out.
+    if (error) {
+      console.error('Sign out error, retrying local sign out:', error.message)
+      await supabase.auth.signOut({ scope: 'local' })
+    }
+
+    setUser(null)
+    setProfile(null)
+    setSigningOut(false)
+    router.replace('/login')
     router.refresh()
   }
 
@@ -76,7 +104,7 @@ export default function Navbar() {
     <nav className="navbar">
       <div className="navbar-inner">
         <Link href="/" className="navbar-logo">
-          ✦ SummaryStreet
+          SummaryStreet
         </Link>
 
         <div className="navbar-links">
@@ -109,8 +137,9 @@ export default function Navbar() {
                     onClick={handleSignOut}
                     className="btn btn-secondary btn-sm"
                     style={{ marginLeft: '0.25rem' }}
+                    disabled={signingOut}
                   >
-                    Sign Out
+                    {signingOut ? 'Signing Out...' : 'Sign Out'}
                   </button>
                 </>
               ) : (

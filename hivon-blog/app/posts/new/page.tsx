@@ -11,7 +11,6 @@ export default function NewPostPage() {
   const router = useRouter()
   const [title, setTitle] = useState('')
   const [content, setContent] = useState('')
-  const [imageUrl, setImageUrl] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
@@ -34,7 +33,7 @@ export default function NewPostPage() {
       const res = await fetch('/api/posts', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ title, content, image_url: imageUrl || null }),
+        body: JSON.stringify({ title, content }),
       })
 
       const data = await res.json()
@@ -45,7 +44,7 @@ export default function NewPostPage() {
         return
       }
 
-      setSuccess('✦ Post published! AI summary is ready.')
+      setSuccess('✦ Post published! AI summary and cover image are ready.')
       setTimeout(() => router.push(`/posts/${data.post.id}`), 1500)
     } catch {
       setError('Something went wrong. Please try again.')
@@ -65,7 +64,7 @@ export default function NewPostPage() {
           Create New Post
         </h1>
         <p style={{ color: 'var(--text-secondary)' }}>
-          An AI-generated summary will be created automatically via Groq.
+          AI will generate a summary and choose a matching cover image from Unsplash.
         </p>
       </div>
 
@@ -88,24 +87,8 @@ export default function NewPostPage() {
             />
           </div>
 
-          <div className="form-group">
-            <label htmlFor="post-image-url" className="form-label">Featured Image URL</label>
-            <input
-              id="post-image-url"
-              type="url"
-              className="form-input"
-              value={imageUrl}
-              onChange={(e) => setImageUrl(e.target.value)}
-              placeholder="https://example.com/image.jpg (optional)"
-            />
-            {imageUrl && (
-              <img
-                src={imageUrl}
-                alt="Preview"
-                style={{ marginTop: '0.75rem', maxHeight: '180px', objectFit: 'cover', borderRadius: 'var(--radius-md)', width: '100%' }}
-                onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }}
-              />
-            )}
+          <div className="alert alert-info">
+            Cover image is selected automatically by AI from Unsplash. If no relevant image is found, a default Unsplash cover is used.
           </div>
 
           <div className="form-group">

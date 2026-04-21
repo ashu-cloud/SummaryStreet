@@ -32,23 +32,15 @@ export default function PostCard({ post }: PostCardProps) {
   const showImage = post.image_url && !imgError
 
   return (
-    <Link href={`/posts/${post.id}`} style={{ display: 'block' }}>
+    <Link href={`/posts/${post.id}`} className="post-card-link">
       <article className="post-card animate-fade-in">
-        {showImage ? (
-          <img
-            src={post.image_url!}
-            alt={post.title}
-            className="post-card-image"
-            onError={() => setImgError(true)}
-            loading="lazy"
-          />
-        ) : (
-          <div className="post-card-image-placeholder" aria-hidden="true">
-            📝
-          </div>
-        )}
+        <div className="post-card-content">
+          <p className="post-card-kicker">
+            <span className="post-card-author">{authorName}</span>
+            <span aria-hidden="true"> {' '}·{' '} </span>
+            <span>{formatDate(post.created_at)}</span>
+          </p>
 
-        <div className="post-card-body">
           <h2 className="post-card-title">{post.title}</h2>
 
           {post.summary && (
@@ -56,17 +48,26 @@ export default function PostCard({ post }: PostCardProps) {
           )}
 
           <div className="post-card-meta">
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-              <span className="post-card-author">by {authorName}</span>
-              <span>{formatDate(post.created_at)}</span>
-            </div>
+            <span className="post-card-readtime">200-word AI brief</span>
             {post.summary && (
               <span className="ai-badge">
-                ✦ AI Summary
+                AI Summary
               </span>
             )}
           </div>
         </div>
+
+        {showImage && (
+          <div className="post-card-media" aria-hidden="true">
+            <img
+              src={post.image_url!}
+              alt={post.title}
+              className="post-card-image"
+              onError={() => setImgError(true)}
+              loading="lazy"
+            />
+          </div>
+        )}
       </article>
     </Link>
   )

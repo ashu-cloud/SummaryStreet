@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import { generateCoverImageUrl } from '@/lib/groq'
 import { NextRequest, NextResponse } from 'next/server'
 
 // GET /api/posts/[id] — single post
@@ -43,7 +44,7 @@ export async function PATCH(
 
   const { data: post } = await supabase
     .from('posts')
-    .select('author_id')
+    .select('author_id, title, body')
     .eq('id', id)
     .single()
 
@@ -58,15 +59,39 @@ export async function PATCH(
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
   }
 
-  const body = await request.json()
-  const { title, content, image_url } = body
+  let body: { title?: string; content?: string }
+  try {
+    body = await request.json()
+  } catch {
+    return NextResponse.json({ error: 'Invalid request body' }, { status: 400 })
+  }
+
+  const { title, content } = body
+  const nextTitle = typeof title === 'string' ? title.trim() : undefined
+  const nextContent = typeof content === 'string' ? content.trim() : undefined
+
+  if (title !== undefined && !nextTitle) {
+    return NextResponse.json({ error: 'Title cannot be empty' }, { status: 400 })
+  }
+
+  if (content !== undefined && !nextContent) {
+    return NextResponse.json({ error: 'Content cannot be empty' }, { status: 400 })
+  }
+
+  if (nextTitle === undefined && nextContent === undefined) {
+    return NextResponse.json({ error: 'No changes provided' }, { status: 400 })
+  }
+
+  const finalTitle = nextTitle ?? post.title
+  const finalBody = nextContent ?? post.body
+  const coverImage = await generateCoverImageUrl(finalTitle, finalBody)
 
   const { data: updated, error: updateError } = await supabase
     .from('posts')
     .update({
-      ...(title && { title }),
-      ...(content && { body: content }),
-      ...(image_url !== undefined && { image_url }),
+      ...(nextTitle !== undefined && { title: nextTitle }),
+      ...(nextContent !== undefined && { body: nextContent }),
+      image_url: coverImage.imageUrl,
     })
     .eq('id', id)
     .select()

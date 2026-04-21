@@ -1,5 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
-import { generateSummary } from '@/lib/groq'
+import { generateCoverImageUrl, generateSummary } from '@/lib/groq'
 import { NextRequest, NextResponse } from 'next/server'
 
 const MAX_TITLE_LENGTH = 200
@@ -68,7 +68,7 @@ export async function POST(request: NextRequest) {
   }
 
   // ── Parse body safely ───────────────────────────────────────────────────────
-  let body: { title?: string; content?: string; image_url?: string }
+  let body: { title?: string; content?: string }
   try {
     body = await request.json()
   } catch {
@@ -78,7 +78,7 @@ export async function POST(request: NextRequest) {
     )
   }
 
-  const { title, content, image_url } = body
+  const { title, content } = body
 
   // ── Field validation ────────────────────────────────────────────────────────
   if (!title?.trim() || !content?.trim()) {
@@ -112,13 +112,16 @@ export async function POST(request: NextRequest) {
     summary = content.substring(0, 250).trim() + '...'
   }
 
+  // ── Generate cover image URL via AI + Unsplash ─────────────────────────────
+  const coverImage = await generateCoverImageUrl(title, content)
+
   // ── Insert post ─────────────────────────────────────────────────────────────
   const { data: post, error: insertError } = await supabase
     .from('posts')
     .insert({
       title: title.trim(),
       body: content.trim(),
-      image_url: image_url || null,
+      image_url: coverImage.imageUrl,
       author_id: user.id,
       summary,
     })

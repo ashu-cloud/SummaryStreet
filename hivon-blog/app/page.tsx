@@ -93,14 +93,14 @@ export default function HomePage() {
           className="btn btn-primary"
           onClick={() => router.push('/posts/new')}
         >
-          ✦ Write a Post
+          Write a Story
         </button>
       )
     }
     if (userRole === 'viewer') {
       return (
-        <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>
-          You&apos;re logged in as a Viewer. Posts will appear here once authors publish.
+        <p style={{ color: 'var(--text-muted)', fontSize: '0.95rem' }}>
+          You&apos;re signed in as a viewer. New stories from authors will appear here.
         </p>
       )
     }
@@ -111,7 +111,7 @@ export default function HomePage() {
         className="btn btn-primary"
         onClick={() => router.push('/register')}
       >
-        Get Started — It&apos;s Free
+        Start Reading for Free
       </button>
     )
   }
@@ -120,15 +120,17 @@ export default function HomePage() {
     <div className="container">
       {/* Hero */}
       <div className="page-hero">
-        <h1>Discover Stories &amp; Ideas</h1>
-        <p>AI-powered blog summaries · Real stories from real authors</p>
+        <h1>Stay curious.</h1>
+        <p>
+          Read thoughtful writing, join the comments, and skim every story with a clear 200-word AI summary.
+        </p>
       </div>
 
       {/* Search */}
       <div style={{ marginBottom: '2rem' }}>
         <SearchBar value={search} onChange={setSearch} />
         {total > 0 && !loading && (
-          <p style={{ textAlign: 'center', marginTop: '0.75rem', color: 'var(--text-muted)', fontSize: '0.85rem' }}>
+          <p className="results-count">
             {total} post{total !== 1 ? 's' : ''} found
           </p>
         )}

@@ -85,8 +85,8 @@ comments   — id, post_id, user_id, comment_text, created_at
 
 1. Author creates or edits a post
 2. Server asks Groq for a short visual query based on title + content
-3. App builds an Unsplash Source URL using that query
-4. If AI query generation fails, app uses a default Unsplash image URL
+3. App fetches a matching Unsplash image via API when `UNSPLASH_ACCESS_KEY` is configured
+4. If API lookup or AI query generation fails, app uses a reliable curated Unsplash fallback image URL
 
 ## User Roles
 
@@ -108,8 +108,9 @@ git push -u origin main
 ```
 
 1. Go to [vercel.com](https://vercel.com) → Import your GitHub repo
-2. Set environment variables (same as `.env.local`)
-3. Deploy — Vercel auto-detects Next.js
+2. Set **Root Directory** to `hivon-blog` (this repository's app is in a subfolder)
+3. Set environment variables (same as `.env.local`)
+4. Deploy — Vercel auto-detects Next.js
 
 ## AI Tool Used
 

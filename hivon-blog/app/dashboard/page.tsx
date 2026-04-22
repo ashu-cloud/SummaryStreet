@@ -13,6 +13,19 @@ function formatDate(d: string) {
   return new Date(d).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })
 }
 
+function getAuthorName(users: unknown): string {
+  if (Array.isArray(users)) {
+    const first = users[0] as { name?: string } | undefined
+    return first?.name ?? 'Unknown'
+  }
+
+  if (users && typeof users === 'object' && 'name' in users) {
+    return (users as { name?: string }).name ?? 'Unknown'
+  }
+
+  return 'Unknown'
+}
+
 export default async function DashboardPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -123,8 +136,7 @@ export default async function DashboardPage() {
                   </td>
                   {profile.role === 'admin' && (
                     <td>
-                      {/* @ts-ignore */}
-                      {post.users?.name ?? 'Unknown'}
+                      {getAuthorName(post.users)}
                     </td>
                   )}
                   <td>

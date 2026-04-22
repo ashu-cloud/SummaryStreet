@@ -20,6 +20,7 @@ export default function HomePage() {
   const router = useRouter()
   const [posts, setPosts] = useState<Post[]>([])
   const [search, setSearch] = useState('')
+  const [debouncedSearch, setDebouncedSearch] = useState('')
   const [page, setPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
   const [total, setTotal] = useState(0)
@@ -65,18 +66,26 @@ export default function HomePage() {
     }
   }, [])
 
-  // Debounced search
+  // Debounce search input
   useEffect(() => {
     const timer = setTimeout(() => {
-      setPage(1)
-      fetchPosts(1, search)
+      setDebouncedSearch(search)
     }, 400)
     return () => clearTimeout(timer)
-  }, [search, fetchPosts])
+  }, [search])
 
   useEffect(() => {
-    fetchPosts(page, search)
-  }, [page])
+    const timer = setTimeout(() => {
+      fetchPosts(page, debouncedSearch)
+    }, 0)
+
+    return () => clearTimeout(timer)
+  }, [page, debouncedSearch, fetchPosts])
+
+  const handleSearchChange = useCallback((value: string) => {
+    setSearch(value)
+    setPage(1)
+  }, [])
 
   const handlePageChange = (newPage: number) => {
     setPage(newPage)
@@ -128,7 +137,7 @@ export default function HomePage() {
 
       {/* Search */}
       <div style={{ marginBottom: '2rem' }}>
-        <SearchBar value={search} onChange={setSearch} />
+        <SearchBar value={search} onChange={handleSearchChange} />
         {total > 0 && !loading && (
           <p className="results-count">
             {total} post{total !== 1 ? 's' : ''} found

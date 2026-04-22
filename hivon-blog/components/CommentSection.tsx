@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import type { User } from '@supabase/supabase-js'
 
 interface Comment {
@@ -33,19 +33,7 @@ export default function CommentSection({ postId }: CommentSectionProps) {
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
 
-  useEffect(() => {
-    const init = async () => {
-      // Lazy import — runs only on client, never during SSR prerender
-      const { createClient } = await import('@/lib/supabase/client')
-      const supabase = createClient()
-      const { data: { user } } = await supabase.auth.getUser()
-      setUser(user)
-      await loadComments()
-    }
-    init()
-  }, [postId])
-
-  const loadComments = async () => {
+  const loadComments = useCallback(async () => {
     setLoading(true)
     try {
       const res = await fetch(`/api/comments/${postId}`)
@@ -56,7 +44,28 @@ export default function CommentSection({ postId }: CommentSectionProps) {
     } finally {
       setLoading(false)
     }
-  }
+  }, [postId])
+
+  useEffect(() => {
+    let active = true
+
+    const init = async () => {
+      // Lazy import — runs only on client, never during SSR prerender
+      const { createClient } = await import('@/lib/supabase/client')
+      const supabase = createClient()
+      const { data: { user } } = await supabase.auth.getUser()
+      if (active) {
+        setUser(user)
+      }
+      await loadComments()
+    }
+
+    init()
+
+    return () => {
+      active = false
+    }
+  }, [loadComments])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()

@@ -1,0 +1,6 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": "nextjs",
+  "installCommand": "npm install --prefix SummaryStreet",
+  "buildCommand": "npm run build --prefix SummaryStreet"
+}

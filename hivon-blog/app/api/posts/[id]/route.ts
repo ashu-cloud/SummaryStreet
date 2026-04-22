@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { generateCoverImageUrl } from '@/lib/groq'
+import { normalizePostImageUrl } from '@/lib/images'
 import { NextRequest, NextResponse } from 'next/server'
 
 // GET /api/posts/[id] — single post
@@ -20,7 +21,12 @@ export async function GET(
     return NextResponse.json({ error: 'Post not found' }, { status: 404 })
   }
 
-  return NextResponse.json({ post: data })
+  return NextResponse.json({
+    post: {
+      ...data,
+      image_url: normalizePostImageUrl(data.image_url, data.title) ?? data.image_url,
+    },
+  })
 }
 
 // PATCH /api/posts/[id] — edit post (Author owns it OR Admin)

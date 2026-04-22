@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { generateCoverImageUrl, generateSummary } from '@/lib/groq'
+import { normalizePostImageUrl } from '@/lib/images'
 import { NextRequest, NextResponse } from 'next/server'
 
 const MAX_TITLE_LENGTH = 200
@@ -32,8 +33,13 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: error.message }, { status: 500 })
   }
 
+  const normalizedPosts = (data ?? []).map((post) => ({
+    ...post,
+    image_url: normalizePostImageUrl(post.image_url, post.title) ?? post.image_url,
+  }))
+
   return NextResponse.json({
-    posts: data,
+    posts: normalizedPosts,
     total: count ?? 0,
     page,
     totalPages: Math.ceil((count ?? 0) / limit),

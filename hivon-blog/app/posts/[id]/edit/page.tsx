@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import Link from 'next/link'
+import { chooseUnsplashFallback, normalizePostImageUrl } from '@/lib/images'
 
 export default function EditPostPage() {
   const router = useRouter()
@@ -16,6 +17,7 @@ export default function EditPostPage() {
   const [fetching, setFetching] = useState(true)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
+  const fallbackImage = chooseUnsplashFallback(title || 'blog writing')
 
   useEffect(() => {
     const loadPost = async () => {
@@ -24,7 +26,9 @@ export default function EditPostPage() {
       if (res.ok && data.post) {
         setTitle(data.post.title)
         setContent(data.post.body)
-        setCoverImageUrl(data.post.image_url ?? '')
+        setCoverImageUrl(
+          normalizePostImageUrl(data.post.image_url, data.post.title) ?? ''
+        )
       } else {
         setError('Post not found')
       }
@@ -102,6 +106,11 @@ export default function EditPostPage() {
               <img
                 src={coverImageUrl}
                 alt="Current cover"
+                onError={() => {
+                  setCoverImageUrl((current) =>
+                    current && current !== fallbackImage ? fallbackImage : ''
+                  )
+                }}
                 style={{ maxHeight: '180px', objectFit: 'cover', borderRadius: 'var(--radius-md)', width: '100%' }}
               />
             </div>

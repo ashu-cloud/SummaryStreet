@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import type { Metadata } from 'next'
 import CommentSection from '@/components/CommentSection'
+import { normalizePostImageUrl } from '@/lib/images'
 
 export const dynamic = 'force-dynamic'
 
@@ -55,6 +56,7 @@ export default async function PostDetailPage({ params }: PageProps) {
 
   const canEdit =
     user?.id === post.author_id || userProfile?.role === 'admin'
+  const displayImageUrl = normalizePostImageUrl(post.image_url, post.title)
 
   return (
     <div className="post-detail animate-fade-in">
@@ -89,9 +91,9 @@ export default async function PostDetailPage({ params }: PageProps) {
       </div>
 
       {/* Featured Image */}
-      {post.image_url && (
+      {displayImageUrl && (
         <img
-          src={post.image_url}
+          src={displayImageUrl}
           alt={post.title}
           className="post-detail-image"
         />
@@ -102,7 +104,7 @@ export default async function PostDetailPage({ params }: PageProps) {
         <div className="ai-summary-box">
           <div className="ai-summary-header">
             <span>✦</span>
-            <span>AI-Generated Summary · Groq llama-3.3-70b-versatile</span>
+            <span>AI-Generated Summary</span>
           </div>
           <p className="ai-summary-text">{post.summary}</p>
         </div>

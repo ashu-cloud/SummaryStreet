@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import { useState } from 'react'
+import { chooseUnsplashFallback, normalizePostImageUrl } from '@/lib/images'
 
 interface Post {
   id: string
@@ -27,9 +28,12 @@ function formatDate(dateString: string) {
 
 export default function PostCard({ post }: PostCardProps) {
   const authorName = post.users?.name ?? 'Unknown'
-  const [imgError, setImgError] = useState(false)
+  const fallbackImage = chooseUnsplashFallback(post.title)
+  const [imgSrc, setImgSrc] = useState<string | null>(() =>
+    normalizePostImageUrl(post.image_url, post.title)
+  )
 
-  const showImage = post.image_url && !imgError
+  const showImage = Boolean(imgSrc)
 
   return (
     <Link href={`/posts/${post.id}`} className="post-card-link">
@@ -60,10 +64,16 @@ export default function PostCard({ post }: PostCardProps) {
         {showImage && (
           <div className="post-card-media" aria-hidden="true">
             <img
-              src={post.image_url!}
+              src={imgSrc!}
               alt={post.title}
               className="post-card-image"
-              onError={() => setImgError(true)}
+              onError={() => {
+                setImgSrc((current) => {
+                  if (!current) return null
+                  if (current === fallbackImage) return null
+                  return fallbackImage
+                })
+              }}
               loading="lazy"
             />
           </div>

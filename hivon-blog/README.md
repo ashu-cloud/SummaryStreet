@@ -52,7 +52,10 @@ Edit `.env.local` and fill in:
 NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
 GROQ_API_KEY=gsk_your-groq-key
+UNSPLASH_ACCESS_KEY=your-unsplash-access-key
 ```
+
+`UNSPLASH_ACCESS_KEY` is optional. If missing, the app still uses reliable Unsplash image URLs via curated fallbacks.
 
 ### 5. Run Locally
 
@@ -60,7 +63,7 @@ GROQ_API_KEY=gsk_your-groq-key
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000)
+Open [http://localhost:3001](http://localhost:3001)
 
 ## Database Schema
 
@@ -119,7 +122,7 @@ This project was built using **Antigravity** (Google DeepMind AI coding assistan
 ## Local Development
 
 ```bash
-npm run dev    # starts dev server with Turbopack at :3000
+npm run dev    # starts dev server with Turbopack at :3001
 npm run build  # production build
 npm run lint   # run ESLint
 ```

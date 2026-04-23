@@ -2,6 +2,5 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "framework": "nextjs",
   "installCommand": "cd SummaryStreet && npm install",
-  "buildCommand": "cd SummaryStreet && npm run build",
-  "outputDirectory": "SummaryStreet/.next"
+  "buildCommand": "cd SummaryStreet && npm run build"
 }
